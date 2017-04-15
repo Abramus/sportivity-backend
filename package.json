@@ -1,0 +1,21 @@
+{
+  "name": "sportivitydbproject",
+  "version": "1.0.0",
+  "description": "Testowy projekt bazy danych do sportivity.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Patryk Abramczyk and Andrzej Frankowski",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.14.2",
+    "dotenv": "^1.2.0",
+    "express": "^4.13.3",
+    "express-generator": "^4.13.1",
+    "jsonwebtoken": "^5.5.4",
+    "kerberos": "0.0.17",
+    "mongoose": "^4.3.5",
+    "morgan": "^1.6.1"
+  }
+}
