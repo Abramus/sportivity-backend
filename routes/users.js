@@ -49,6 +49,7 @@ var app    				= 	express();
 router.route("/users")
 //Poranie wszystkich userów
     .get(function(req,res){
+    	console.log("Basic user");
         var response = {};
         user.find({}, userResponseModels.modelForAllUsers).exec(function(err,data){
             if(err) {
@@ -87,6 +88,21 @@ router.route("/users")
         })
     });
 
+//Wyszukiwanie userów po zdefiniowanych parametrach
+router.route('/users/:search').get(function(req, res) {
+	console.log("Search");
+	var response = {};
+	var search = req.params.search;  
+    user.find({ name : search }).exec(function(err, items) {
+        if(err) {
+        	response = {error : true, message : "Error fetching data"};
+        	res.status(400).json(response);
+    	} else {
+        	response = {error : false, message : items};
+        	res.status(200).json(response);
+    	}
+    });
+})
 router.route('/users/:id').get(function(req, res) {
 	var response = {};
 	user.findOne({ _id: req.params.id })
