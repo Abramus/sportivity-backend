@@ -4,8 +4,14 @@ var ObjectId 	= 	Schema.ObjectId;
 
 
 var EventSchema  = new Schema({
-    name : String,
-    sportCategory: String,
+    name : {
+        type: String,
+        default: ""
+    },
+    sportCategory: {
+        type: String,
+        default: ""
+    },
     attendees: [{
         type: ObjectId,
         ref: 'user'
@@ -18,11 +24,26 @@ var EventSchema  = new Schema({
         type: ObjectId,
         ref: 'place'
     },
-    dateStart: Date,
-    dateEnd: Date,
-    pricing : Number,
-    details: String,
-    capacity : Number
+    dateStart: { 
+        type: Date,
+        default: Date.now
+    },
+    dateEnd: { 
+        type: Date,
+        default: Date.now
+    },
+    pricing : {
+        type: Number,
+        default: 0
+    },
+    details: {
+        type: String,
+        default: ""
+    },
+    capacity : {
+        type: Number,
+        default: 0
+    }
 });
 
 module.exports = mongoose.model('event',EventSchema);

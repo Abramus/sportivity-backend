@@ -49,7 +49,6 @@ var app    				= 	express();
 router.route("/users")
 //Poranie wszystkich userów
     .get(function(req,res){
-    	console.log("Basic user");
         var response = {};
         user.find({}, userResponseModels.modelForAllUsers).exec(function(err,data){
             if(err) {
@@ -274,7 +273,6 @@ router.route('/users/updateProfile').put(function(req, res) {
 
 //Zapytania do dodawania i uzupełniania bazy danych przez nas - adminów
 router.route("/users/:id").get(function(req,res){
-	console.log("Basic user");
     var response = {};
     user.find({_id: req.params.id}, userResponseModels.modelForAdmins).exec(function(err,data){
         if(err) {
