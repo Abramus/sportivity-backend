@@ -50,42 +50,82 @@ router.route("/places")
         var categoriesArray = req.query.category;
         var longitude = req.query.longitude;
         var latitude = req.query.latitude;
+
         if(categoriesArray == null) {
-        	place.find({loc: { $near :
-	          {
-	            $geometry: { type: "Point",  coordinates: [ longitude, latitude ] },
-	            $minDistance: 1,
-	            $maxDistance: 50000
-	          }
-       		}},function(err,data){
-	            if(err) {
-	                response = {"error" : true,"message" : "Error fetching data"};
-	                res.status(400).json(response);
-	            } else {
-	                if(data) {
-	                	response = {error : false, "message" : data};
-	                	res.status(200).json(response);
-	                } else {
-	                	response = {error : false, "message" : data};
-	                	res.status(400).json(response);
-	                }
-	            }
-        	});
+        	 if(longitude == null || latitude == null) {
+	        	place.find({}).exec(function(err,data){
+		            if(err) {
+		                response = {"error" : true,"message" : "Error fetching data"};
+		                res.status(400).json(response);
+		            } else {
+		                if(data) {
+		                	response = {error : false, "message"  : data};
+		                	res.status(200).json(response);
+		                } else {
+		                	response = {error : false, "message"  : data};
+		                	res.status(400).json(response);
+		                }
+		            }
+	        	});
+    		} else {
+	        	place.find({loc: { $near :
+		          {
+		            $geometry: { type: "Point",  coordinates: [ longitude, latitude ] },
+		            $minDistance: 1,
+		            $maxDistance: 50000
+		          }
+	       		}},function(err,data){
+		            if(err) {
+		                response = {"error" : true,"message" : "Error fetching data"};
+		                res.status(400).json(response);
+		            } else {
+		                if(data) {
+		                	response = {error : false, "message" : data};
+		                	res.status(200).json(response);
+		                } else {
+		                	response = {error : false, "message" : data};
+		                	res.status(400).json(response);
+		                }
+		            }
+	        	});
+	        }
         } else {
-        	place.find({sportCategories: {$in: categoriesArray}}).exec(function(err,data){
-	            if(err) {
-	                response = {"error" : true,"message" : "Error fetching data"};
-	                res.status(400).json(response);
-	            } else {
-	                if(data) {
-	                	response = {error : false, "message"  : data};
-	                	res.status(200).json(response);
-	                } else {
-	                	response = {error : false, "message"  : data};
-	                	res.status(400).json(response);
-	                }
-	            }
-        	});
+        	if(longitude == null || latitude == null) {
+	        	place.find({sportCategories: {$in: categoriesArray}}).exec(function(err,data){
+		            if(err) {
+		                response = {"error" : true,"message" : "Error fetching data"};
+		                res.status(400).json(response);
+		            } else {
+		                if(data) {
+		                	response = {error : false, "message"  : data};
+		                	res.status(200).json(response);
+		                } else {
+		                	response = {error : false, "message"  : data};
+		                	res.status(400).json(response);
+		                }
+		            }
+	        	});
+	        } else {
+	        	place.find({sportCategories: {$in: categoriesArray}, loc: { $near :
+		          {
+		            $geometry: { type: "Point",  coordinates: [ longitude, latitude ] },
+		            $maxDistance: 50000
+		          }}}).exec(function(err,data){
+		            if(err) {
+		            	console.log(err);
+		                response = {"error" : true,"message" : "Error fetching data"};
+		                res.status(400).json(response);
+		            } else {
+		                if(data) {
+		                	response = {error : false, "message"  : data};
+		                	res.status(200).json(response);
+		                } else {
+		                	response = {error : false, "message"  : data};
+		                	res.status(400).json(response);
+		                }
+		            }
+	        	});
+	        }
         }
     })
 //Dodanie miejsca
@@ -135,7 +175,6 @@ router.route('/places/id').get(function(req, res) {
         }
 	});
 });
-
 //Zapytania do dodawania i uzupełniania bazy danych przez nas - adminów
 router.route('/places/:id').get(function(req, res) {
 	place.find({}).exec(function(err,data){
@@ -158,7 +197,6 @@ router.route('/places/:id').put(function(req,res){
 	    if (err) {
 	      return res.send(err);
 	    }
-
 	    for (prop in req.body) {
 	      place[prop] = req.body[prop];
 	    }
@@ -179,7 +217,6 @@ router.route('/places/:id').delete(function(req, res) {
 	    if (err) {
 	      return res.send(err);
 	    }
-
 	    res.json({ message: 'Successfully deleted' });
 	  });
 });
