@@ -56,8 +56,13 @@ router.route("/users")
                 response = {error : true, message : "Error fetching data"};
                 res.status(400).json(response);
             } else {
-                response = {error : false, message : data};
-                res.status(200).json(response);
+            	if(data) {
+                	response = {error : false, message : data};
+                	res.status(200).json(response);
+                } else {
+                	response = {error : false, message : data};
+                	res.status(400).json(response);
+                }
             }
         });
     })
@@ -80,20 +85,19 @@ router.route("/users")
 			                res.status(400).json(response);
 			            } else {
 			                response = {error : false, message : "User added", "Data inserted": db};
-			                res.status(200).json(response);
+			                res.status(201).json(response);
 			            }
 	        		});
 			    }
 	        }
-        })
+        });
     });
 
 //Wyszukiwanie userów po zdefiniowanych parametrach
-router.route('/users/:search').get(function(req, res) {
-	console.log("Search");
+router.route('/users/search').get(function(req, res) {
 	var response = {};
-	var search = req.params.search;  
-    user.find({ name : search }).exec(function(err, items) {
+	var searchValue = req.query.searchValue;
+    user.find({ $or:[ {name : new RegExp(searchValue)}, {email : new RegExp(searchValue)}]}, userResponseModels.modelForAllUsers).exec(function(err, items) {
         if(err) {
         	response = {error : true, message : "Error fetching data"};
         	res.status(400).json(response);
@@ -102,49 +106,218 @@ router.route('/users/:search').get(function(req, res) {
         	res.status(200).json(response);
     	}
     });
-})
-router.route('/users/:id').get(function(req, res) {
+});
+
+//Wyszukiwanie konkretnego użytkownika
+router.route('/users/id').get(function(req, res) {
 	var response = {};
-	user.findOne({ _id: req.params.id })
-	.populate('friends')
+	var userId 	= req.query.userId;
+	user.findOne({ _id: userId },userResponseModels.modelForUserProfile)
 	.populate('events')
-	.populate('evetnts.place')
+	.populate('friends')
 	.exec(function (err, data) {
 		if(err) {
         	response = {"error" : true,"message" : "Error fetching data"};
+        	res.status(400).json(response);
     	} else {
-            response = {"error" : false,"message" : data};
+    		if(data) {
+	            response = {"error" : false,"message" : data};
+	            res.status(200).json(response);
+        	} else {
+        		response = {"error" : false,"message" : data};
+	            res.status(400).json(response);
+        	}
         }
-        res.json(response);
-	})
+	});
+});
+
+//Pobranie własnego profilu
+router.route('/users/myProfile').get(function(req, res) {
+	var response = {};
+	var myUserId 	= req.query.myUserId;
+	//TODO
+	//Trzeba dorobić jakieś sprawdzenie, że ktoś pobiera swój własny profil.
+	user.findOne({ _id: myUserId },userResponseModels.modelForProfileOwner)
+	.populate('events')
+	.populate('friends')
+	.exec(function (err, data) {
+		if(err) {
+        	response = {"error" : true,"message" : "Error fetching data"};
+        	res.status(400).json(response);
+    	} else {
+    		if(data) {
+	            response = {"error" : false,"message" : data};
+	            res.status(200).json(response);
+        	} else {
+        		response = {"error" : false,"message" : data};
+	            res.status(400).json(response);
+        	}
+        }
+	});
+});
+
+//Sprawdzenie czy followuje danego usera
+router.route('/users/isFriend').get(function(req, res) {
+	var response = {};
+	var myUserId = req.query.myUserId;
+	var userId = req.query.userId;
+	var isFriend = false;
+	user.findOne({ _id: myUserId })
+	.exec(function (err, data) {
+		if(err) {
+        	response = {"error" : true,"message" : "Error fetching data"};
+        	res.status(400).json(response);
+    	} else {
+    		if(data) {
+    			//Check if I follow
+    			if(data.friends.indexOf(userId) > -1)
+    				isFriend = true;
+    			response = {"error" : false,"isFriend" : isFriend};
+            	res.status(200).json(response);
+    		} else {
+    			response = {"error" : false,"isFriend" : isFriend};
+	            res.status(400).json(response);
+    		}
+        }
+	});
+});
+
+//Dodanie usera do friends
+router.route('/users/addFriend').put(function(req, res) {
+	var response = {};
+	var myUserId = req.query.myUserId;
+	var userId = req.query.userId;
+	user.findOne({ _id: myUserId })
+	.exec(function (err, data) {
+		if(err) {
+        	response = {"error" : true,"message" : "Error fetching data"};
+        	res.status(400).json(response);
+    	} else {
+    		if(data) {
+    			//Check if already following
+    			if(data.friends.indexOf(userId) > -1) {
+    				response = {"error" : true,"message" : "Friend already added"};
+			        res.status(400).json(response);
+	    		} else {
+	    			//Add new friend
+	    			data.friends.push(userId);
+	    			data.save(function(err) {
+					    if (err) {
+					        return res.send(err);
+					    }
+		    			response = {"error" : false, "message": "Friend added"};
+		            	res.status(200).json(response);
+	            	});
+	            	//Wysłanie push'a do tego znajomego
+	            	//TODO
+	    		}
+    		} else {
+    			response = {"error" : false, "message": "No such user"};
+	            res.status(400).json(response);
+    		}
+        }
+	});
+});
+
+//Usunięcie usera z friends
+router.route('/users/removeFriend').delete(function(req, res) {
+	var response = {};
+	var myUserId = req.query.myUserId;
+	var userId = req.query.userId;
+	user.update( { _id: myUserId }, { $pull: {friends : userId } }).exec(function (err, data) {
+		if(err) {
+	    	response = {"error" : true,"message" : "Error fetching data"};
+	    	res.status(400).json(response);
+		} else {
+			if(data.nModified == 0) {
+				response = {"error" : false,"message" : "Friend not found"};
+        		res.status(400).json(response);
+	        } else {
+	        	response = {"error" : false,"message" : "Friend removed successfully"};
+        		res.status(200).json(response);
+	        }
+	    }
+	});
+});
+
+//Uaktualnienie własnych danych
+router.route('/users/updateProfile').put(function(req, res) {
+	var response = {};
+	var myUserId = req.query.myUserId;
+	//TODO
+	//Trzeba dorobić jakieś sprawdzenie, że ktoś pobiera swój własny profil.
+	user.findOne({ _id: myUserId })
+	.exec(function (err, data) {
+		if(err) {
+        	response = {"error" : true,"message" : "Error fetching data"};
+        	res.status(400).json(response);
+    	} else {
+    		if(data) {
+    			//Odczytanie wszystkich propertiesów, które chcemy zaktualizować
+    			for (prop in req.body) {
+			      data[prop] = req.body[prop];
+			    }
+			    data.save(function(err) {
+				    if (err) {
+				    	return res.send(err);
+				    }
+    				response = {"error" : false, "message": "User updated!"};
+            		res.status(200).json(response);
+	            });
+    		} else {
+    			response = {"error" : false, "message": "No such user"};
+	            res.status(400).json(response);
+    		}
+        }
+	});
+});
+
+//Zapytania do dodawania i uzupełniania bazy danych przez nas - adminów
+router.route("/users/:id").get(function(req,res){
+	console.log("Basic user");
+    var response = {};
+    user.find({_id: req.params.id}, userResponseModels.modelForAdmins).exec(function(err,data){
+        if(err) {
+            response = {error : true, message : "Error fetching data"};
+            res.status(400).json(response);
+        } else {
+        	if(data) {
+            	response = {error : false, message : data};
+            	res.status(200).json(response);
+            } else {
+            	response = {error : false, message : data};
+            	res.status(400).json(response);
+            }
+        }
+
+    });
 });
 router.route('/users/:id').put(function(req,res){
-	  user.findOne({ _id: req.params.id }, function(err, user) {
+	user.findOne({ _id: req.params.id }, function(err, user) {
 	    if (err) {
 	      return res.send(err);
 	    }
-
 	    for (prop in req.body) {
 	      user[prop] = req.body[prop];
 	    }
-		    // save the user
-		    user.save(function(err) {
-		      if (err) {
-		        return res.send(err);
-		      }
-
-		      res.json({ message: 'User updated!' });
-		    });
-	  	});
-	});
+	    // save the user
+	    user.save(function(err) {
+	      if (err) {
+	        return res.send(err);
+	      }
+	      res.json({ message: 'User updated!' });
+	    });
+  	});
+});
 router.route('/users/:id').delete(function(req, res) {
-	  user.remove({
-	    _id: req.params.id
-	  }, function(err, user) {
-	    if (err) {
-	      return res.send(err);
-	    }
-	    res.json({ message: 'Successfully deleted' });
-	  });
-	});
+  user.remove({
+    _id: req.params.id
+  }, function(err, user) {
+    if (err) {
+      return res.send(err);
+    }
+    res.json({ message: 'Successfully deleted' });
+  });
+});
+
 module.exports = router;

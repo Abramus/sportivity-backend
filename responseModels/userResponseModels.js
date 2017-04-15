@@ -4,6 +4,31 @@ var modelForAllUsers = {
  	'photoURL'			: true
  };
 
+ var modelForUserProfile = {
+	'email'				: true,
+	'name' 				: true,
+ 	'age'				: true,
+ 	'city'				: true,
+ 	'sportsCategories'	: true,
+ 	'photoURL'			: true,
+ 	'participatedEvents': true,
+ 	'events'			: true,
+ 	'friends'			: true
+ };
+
+ var modelForProfileOwner = {
+	'email'				: true,
+	'name' 				: true,
+ 	'age'				: true,
+ 	'birthDate'			: true,
+ 	'city'				: true,
+ 	'sportsCategories'	: true,
+ 	'photoURL'			: true,
+ 	'participatedEvents': true,
+ 	'events'			: true,
+ 	'friends'			: true
+ };
+
  var modelForAdmins = {
 	'email'				: true,
 	'name' 				: true,
@@ -20,6 +45,8 @@ var modelForAllUsers = {
  };
 
  module.exports = { 
- 	modelForAllUsers : modelForAllUsers,
- 	modelForAdmins : modelForAdmins
+ 	modelForAllUsers 		: modelForAllUsers,
+ 	modelForAdmins 			: modelForAdmins,
+ 	modelForUserProfile 	: modelForUserProfile,
+ 	modelForProfileOwner 	: modelForProfileOwner
   };

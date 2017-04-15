@@ -1,9 +1,10 @@
-var place = require('../models/place');
-var express = require('express');
-var router = express.Router();
-var app    = express();
-var config = require('../config'); // get our config file
-var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
+var place 		= require('../models/place');
+var event 		= require('../models/event');
+var express 	= require('express');
+//var config 		= require('../config'); // get our config file
+var jwt    		= require('jsonwebtoken'); // used to create, sign, and verify tokens
+var router 		= express.Router();
+var app    		= express();
 
 ///////////////
 //CHECK TOKEN//
@@ -42,64 +43,116 @@ var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 // });
 
 router.route("/places")
-    .get(function(req,res,next){
+//Pobranie wszystkich places na podstawie ewentualnych kategori
+    .get(function(req,res){
         var response = {};
-        //Zczytanie wszystkich parametrów 
-        var query = require('url').parse(req.url,true).query;
-        //console.log('The category is %s', query.category);
-        var categories = query.category + ',';
-        var categoriesArray = categories. split(',');
-
-        //IF THERE IS NO CATEGORY GIVEN
-        if(query.category == null) {
-        	place.find({},function(err,data){
-	        	// Mongo command to fetch all data from collection.
+        //Zczytanie wszystkich kategorii do arraya 
+        var categoriesArray = req.query.category;
+        var longitude = req.query.longitude;
+        var latitude = req.query.latitude;
+        if(categoriesArray == null) {
+        	place.find({loc: { $near :
+	          {
+	            $geometry: { type: "Point",  coordinates: [ longitude, latitude ] },
+	            $minDistance: 1,
+	            $maxDistance: 50000
+	          }
+       		}},function(err,data){
 	            if(err) {
 	                response = {"error" : true,"message" : "Error fetching data"};
+	                res.status(400).json(response);
 	            } else {
-	                response = {"error" : false,"message" : data};
+	                if(data) {
+	                	response = {error : false, "message" : data};
+	                	res.status(200).json(response);
+	                } else {
+	                	response = {error : false, "message" : data};
+	                	res.status(400).json(response);
+	                }
 	            }
-	            res.json(response);
         	});
         } else {
-
-        	place.find({categories: {$in: categoriesArray}}).exec(function(err,data){
-	        	// Mongo command to fetch all data from collection.
+        	place.find({sportCategories: {$in: categoriesArray}}).exec(function(err,data){
 	            if(err) {
 	                response = {"error" : true,"message" : "Error fetching data"};
+	                res.status(400).json(response);
 	            } else {
-	                response = {"error" : false,"message" : data};
+	                if(data) {
+	                	response = {error : false, "message"  : data};
+	                	res.status(200).json(response);
+	                } else {
+	                	response = {error : false, "message"  : data};
+	                	res.status(400).json(response);
+	                }
 	            }
-	            res.json(response);
         	});
         }
-        
     })
-    .post(function(req, res) {
-    var db = new place(req.body);
-    var response = {};
-
-    db.save(function(err){
-        // save() will run insert() command of MongoDB.
-        // it will add new data in collection.
-            if(err) {
-                response = {"error" : true,"message" : "Error adding data"};
-            } else {
-                response = {"error" : false,"message" : "Data added", "Data inserted": db};
-            }
-
-            res.json(response);
-        });
-  });
-router.route('/places/:id').get(function(req, res) {
-	  place.findOne({ _id: req.params.id}, function(err, place) {
-	    if (err) {
-	      return res.send(err);
-	    }
-
-	    res.json(place);
-	  });
+//Dodanie miejsca
+	.post(function(req, res) {
+		var db = new place(req.body);
+		var response = {};
+		place.findOne({ street: req.body.street }).exec(function (err, data) {
+			if(err) {
+	            response = {error : true, message : "Error adding data"};
+	            res.status(400).json(response);      
+	    	} else {
+	    		if(data) {
+		            response = {"error" : true,"message" : "Place already exists."};
+			        res.status(400).json(response);
+			    } else {
+					db.save(function(err) {
+				        if(err) {
+				            response = {"error" : true,"message" : "Error adding data"};
+				             res.status(400).json(response);
+				        } else {
+				            response = {"error" : false,"message" : "Data added", "Data inserted": db};
+				            res.status(200).json(response);
+				        }
+				    });
+				}
+			}
+		});
+	})
+//Wyszukiwanie konkretnego miejsca
+router.route('/places/id').get(function(req, res) {
+	var response = {};
+	var placeId  = req.query.placeId;
+	place.findOne({ _id: placeId })
+	.populate('events')
+	.exec(function (err, data) {
+		if(err) {
+        	response = {"error" : true,"message" : "Error fetching data"};
+        	res.status(400).json(response);
+    	} else {
+    		if(data) {
+	            response = {"error" : false,"message" : data};
+	            res.status(200).json(response);
+        	} else {
+        		response = {"error" : false,"message" : data};
+	            res.status(400).json(response);
+        	}
+        }
 	});
+});
+
+//Zapytania do dodawania i uzupełniania bazy danych przez nas - adminów
+router.route('/places/:id').get(function(req, res) {
+	place.find({}).exec(function(err,data){
+        if(err) {
+            response = {error : true, message : "Error fetching data"};
+            res.status(400).json(response);
+        } else {
+        	if(data) {
+            	response = {error : false, message : data};
+            	res.status(200).json(response);
+            } else {
+            	response = {error : false, message : data};
+            	res.status(400).json(response);
+            }
+        }
+    });
+});
 router.route('/places/:id').put(function(req,res){
 	  place.findOne({ _id: req.params.id }, function(err, place) {
 	    if (err) {
@@ -118,7 +171,7 @@ router.route('/places/:id').put(function(req,res){
 		      res.json({ message: 'Place updated!' });
 		    });
 	  	});
-	});
+});
 router.route('/places/:id').delete(function(req, res) {
 	  place.remove({
 	    _id: req.params.id
@@ -129,6 +182,6 @@ router.route('/places/:id').delete(function(req, res) {
 
 	    res.json({ message: 'Successfully deleted' });
 	  });
-	});
+});
 
 module.exports = router;

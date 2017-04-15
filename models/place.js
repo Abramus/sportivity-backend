@@ -8,14 +8,35 @@ var LocationSchema = new Schema({
 });
 
 var placeSchema  = new Schema({
-    name : String,
-    street : String,
-    city : String,
-    about : String,
-    phoneNumb : String,
+    name : {
+        type: String,
+        default: ""
+    },
+    street : {
+        type: String,
+        default: ""
+    },
+    city : {
+        type: String,
+        default: ""
+    },
+    about : {
+        type: String,
+        default: ""
+    },
+    phoneNumb : {
+        type: String,
+        default: ""
+    },
     loc : LocationSchema,
-    sportCategories: [String],
-    photosURL: [String],
+    sportCategories: [{
+        type: String,
+        default: ""
+    },],
+    photosURL: [{
+        type: String,
+        default: ""
+    },],
     events : [{
         type: ObjectId,
         ref: 'event'
