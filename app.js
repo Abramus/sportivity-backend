@@ -18,14 +18,16 @@ var dbName = 'SportivityDatabase';
 //var connectionString = 'mongodb://localhost:27017/' + dbName;
 var connectionString = 'mongodb://Patryk:Patryk@ds045465.mlab.com:45465/heroku_pv66mctg';
 
+//Tylko na heorku
+require('dotenv').config({path: './'});
+require('dotenv').load();
 
-//require('dotenv').config({path: './'});
-//require('dotenv').load();
 //Database when deploy to Heroku
-//mongoose.connect(process.env.DB_HOST);
+mongoose.connect(process.env.DB_HOST);
+
 //Database when deploy locally
-mongoose.Promise = global.Promise;
-mongoose.connect(connectionString);
+//mongoose.Promise = global.Promise;
+//mongoose.connect(connectionString);
 
 
 app.set('superSecret', config.secret); // secret variable

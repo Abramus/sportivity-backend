@@ -19,11 +19,11 @@ router.route("/authenticate")
   }, function(err, user) {
     if (err) throw err;
     if (!user) {
-      res.status(404).json({ success: false, message: 'Authentication failed. User not found.' });
+      res.status(404).json({ "error": true, "message": 'Authentication failed. User not found.', "data" : null});
     } else if (user) {
       // check if password matches
       if (user.password != req.body.password) {
-        res.status(403).json({ success: false, message: 'Authentication failed. Wrong password.' });
+        res.status(403).json({ "error": true, "message": 'Authentication failed. Wrong password.',  "data" : null });
       } else {
         // if user is found and password is right
         // create a token
@@ -32,9 +32,11 @@ router.route("/authenticate")
         });
         // return the information including token as JSON
         res.status(200).json({
-          success: true,
-          message: 'Enjoy your token!',
-          token: token
+          "error": false,
+          "message": null,
+          "data" : {
+            "token": token
+          }
         });
       }   
     }

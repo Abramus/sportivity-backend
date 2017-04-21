@@ -55,15 +55,15 @@ router.route("/places")
         	 if(longitude == null || latitude == null) {
 	        	place.find({}).exec(function(err,data){
 		            if(err) {
-		                response = {"error" : true,"message" : "Error fetching data"};
+		                response = {"error" : true, "message" : "Error fetching data.", "data": null};
 		                res.status(400).json(response);
 		            } else {
 		                if(data) {
-		                	response = {error : false, "message"  : data};
+		                	response = {"error" : false, "message": null, "data": data};
 		                	res.status(200).json(response);
 		                } else {
-		                	response = {error : false, "message"  : data};
-		                	res.status(400).json(response);
+		                	response = {"error" : false, "message": "No data available. Categories = null, long/lat = null.", "data": null};
+		                	res.status(200).json(response);
 		                }
 		            }
 	        	});
@@ -76,15 +76,15 @@ router.route("/places")
 		          }
 	       		}},function(err,data){
 		            if(err) {
-		                response = {"error" : true,"message" : "Error fetching data"};
+		                response = {"error" : true, "message" : "Error fetching data.", "data": null};
 		                res.status(400).json(response);
 		            } else {
 		                if(data) {
-		                	response = {error : false, "message" : data};
+		                	response = {"error" : false, "message" : null, "data": data};
 		                	res.status(200).json(response);
 		                } else {
-		                	response = {error : false, "message" : data};
-		                	res.status(400).json(response);
+		                	response = {"error" : false, "message" : "No data available. Categories = null.", "data": data};
+		                	res.status(200).json(response);
 		                }
 		            }
 	        	});
@@ -93,15 +93,15 @@ router.route("/places")
         	if(longitude == null || latitude == null) {
 	        	place.find({sportCategories: {$in: categoriesArray}}).exec(function(err,data){
 		            if(err) {
-		                response = {"error" : true,"message" : "Error fetching data"};
+		                response = {"error": true,"message" : "Error fetching data", "data": null};
 		                res.status(400).json(response);
 		            } else {
 		                if(data) {
-		                	response = {error : false, "message"  : data};
+		                	response = {"error": false, "message" : null, "data" : data};
 		                	res.status(200).json(response);
 		                } else {
-		                	response = {error : false, "message"  : data};
-		                	res.status(400).json(response);
+		                	response = {"error": false, "message" : "No data available. Long/lat = null.", "data" : null};
+		                	res.status(200).json(response);
 		                }
 		            }
 	        	});
@@ -113,15 +113,15 @@ router.route("/places")
 		          }}}).exec(function(err,data){
 		            if(err) {
 		            	console.log(err);
-		                response = {"error" : true,"message" : "Error fetching data"};
+		                response = {"error": true, "message": "Error fetching data", "data": null};
 		                res.status(400).json(response);
 		            } else {
 		                if(data) {
-		                	response = {error : false, "message"  : data};
+		                	response = {"error" : false, "message": null, "data": data};
 		                	res.status(200).json(response);
 		                } else {
-		                	response = {error : false, "message"  : data};
-		                	res.status(400).json(response);
+		                	response = {"error" : false, "message": "No data available.", "data": null};
+		                	res.status(200).json(response);
 		                }
 		            }
 	        	});
@@ -134,19 +134,19 @@ router.route("/places")
 		var response = {};
 		place.findOne({ street: req.body.street }).exec(function (err, data) {
 			if(err) {
-	            response = {error : true, message : "Error adding data"};
+	            response = {error : true, message : "Error adding data", "data": null};
 	            res.status(400).json(response);      
 	    	} else {
 	    		if(data) {
-		            response = {"error" : true,"message" : "Place already exists."};
+		            response = {"error" : true, "message" : "Place already exists.", "data": null};
 			        res.status(400).json(response);
 			    } else {
 					db.save(function(err) {
 				        if(err) {
-				            response = {"error" : true,"message" : "Error adding data"};
+				            response = {"error" : true, "message" : "Error adding data", "data": null};
 				             res.status(400).json(response);
 				        } else {
-				            response = {"error" : false,"message" : "Data added", "Data inserted": db};
+				            response = {"error" : false, "message" : "Data added", "data": db};
 				            res.status(200).json(response);
 				        }
 				    });
@@ -162,15 +162,15 @@ router.route('/places/id').get(function(req, res) {
 	.populate('events')
 	.exec(function (err, data) {
 		if(err) {
-        	response = {"error" : true,"message" : "Error fetching data"};
+        	response = {"error" : true,"message" : "Error fetching data", "data": null};
         	res.status(400).json(response);
     	} else {
     		if(data) {
-	            response = {"error" : false,"message" : data};
+	            response = {"error" : false, "message" : null, "data": data};
 	            res.status(200).json(response);
         	} else {
-        		response = {"error" : false,"message" : data};
-	            res.status(400).json(response);
+        		response = {"error" : false, "message" : "", "data": null};
+	            res.status(200).json(response);
         	}
         }
 	});
@@ -179,15 +179,15 @@ router.route('/places/id').get(function(req, res) {
 router.route('/places/:id').get(function(req, res) {
 	place.find({}).exec(function(err,data){
         if(err) {
-            response = {error : true, message : "Error fetching data"};
+            response = {"error" : true, "message" : "Error fetching data", "data": null};
             res.status(400).json(response);
         } else {
         	if(data) {
-            	response = {error : false, message : data};
+            	response = {"error" : false, "message" : null, "data": data};
             	res.status(200).json(response);
             } else {
-            	response = {error : false, message : data};
-            	res.status(400).json(response);
+            	response = {"error" : false, "message" : "No data available.", "data": null};
+            	res.status(200).json(response);
             }
         }
     });
@@ -205,8 +205,7 @@ router.route('/places/:id').put(function(req,res){
 		      if (err) {
 		        return res.send(err);
 		      }
-
-		      res.json({ message: 'Place updated!' });
+		      res.json({"error" : false, "message" : 'Place updated!', "data": place });
 		    });
 	  	});
 });
@@ -217,7 +216,7 @@ router.route('/places/:id').delete(function(req, res) {
 	    if (err) {
 	      return res.send(err);
 	    }
-	    res.json({ message: 'Successfully deleted' });
+	    res.json({ "error" : false, "message" : 'Successfully deleted', "data": place });
 	  });
 });
 
