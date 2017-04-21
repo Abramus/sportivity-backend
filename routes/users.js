@@ -123,7 +123,7 @@ router.route('/users/id').get(function(req, res) {
 	            response = {"error" : false, "message" : null, "data": data};
 	            res.status(200).json(response);
         	} else {
-        		response = {"error" : false, "message" : "No data available.", "data": sdata};
+        		response = {"error" : false, "message" : "No data available.", "data": data};
 	            res.status(200).json(response);
         	}
         }
