@@ -6,6 +6,7 @@ var user      = require('../models/user');
 var config    = require('../config'); // get our config file
 
 
+
 // ////////////////////
 // //AUTHORIZATION AND TOKEN GENERATING
 // ////////////////////
@@ -27,16 +28,23 @@ router.route("/authenticate")
       } else {
         // if user is found and password is right
         // create a token
-        var token = jwt.sign(user, app.get('superSecret'), {
+        var tokenVar = jwt.sign(user, app.get('superSecret'), {
           expiresIn: 31104000 // expires in 24 hours
         });
+        //Save token to user
+        user.token = tokenVar;
         // return the information including token as JSON
-        res.status(200).json({
-          "error": false,
-          "message": null,
-          "data" : {
-            "token": token
+        user.save(function(err) {
+          if (err) {
+            return res.send(err);
           }
+          res.status(200).json({
+            "error": false,
+            "message": null,
+            "data" : {
+              "token": tokenVar
+            }
+          });             
         });
       }   
     }

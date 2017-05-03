@@ -26,6 +26,10 @@ var userSchema  = 	new Schema({
         type: Boolean,
         default: false
     },
+    token : {
+        type: String,
+        default: ""
+    },
     photoURL: {
         type: String,
         default: ""

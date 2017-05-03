@@ -41,7 +41,8 @@ var modelForAllUsers = {
  	'photoURL'			: true,
  	'participatedEvents': true,
  	'events'			: true,
- 	'friends'			: true
+ 	'friends'			: true,
+ 	'token'				: true
  };
 
  module.exports = { 
