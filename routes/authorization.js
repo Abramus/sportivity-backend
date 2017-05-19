@@ -42,7 +42,7 @@ router.route("/authenticate")
             "error": false,
             "message": null,
             "data" : {
-              "token": tokenVar
+              "user" : user
             }
           });             
         });
